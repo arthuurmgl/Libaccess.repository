@@ -48,6 +48,7 @@ st.markdown("""
         <div class="divider"></div>
     </div>
 """, unsafe_allow_html=True)
+
 ############################
 # Função para converter imagem para base64
 def img_to_base64(img_path):
@@ -81,6 +82,49 @@ background_css = f"""
 }}
 </style>
 """
+
+import streamlit as st
+
+# Estilo CSS personalizado para o botão e biografia
+st.markdown("""
+<style>
+    .biography {
+        background-color: #f0f2f6;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 10px;
+        border-left: 5px solid #4e8cff;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+# Botão expansível para a biografia
+with st.expander("📖 Sobre o LibAccess - Objetivo do Projeto", expanded=False):
+    st.markdown("""
+    <div class="biography">
+        <h3 style='color:#2c3e50;'>LibAccess - Democratizando o Acesso ao Conhecimento</h3>
+        
+        <p> LibAccess é uma plataforma inovadora desenvolvida com o objetivo de: </p>
+        
+        <ul>
+                🔓 Facilitar o acesso aberto a conteúdos acadêmicos e científicos</li>
+                📚 Criar uma biblioteca digital colaborativa de recursos educacionais</li>
+                🌍 Promover a democratização do conhecimento em múltiplos idiomas</li>
+                🤝 Conectar pesquisadores, estudantes e entusiastas do aprendizado</li>
+        </ul>
+        
+        <p>Nossa missão é remover barreiras ao conhecimento, utilizando tecnologia de ponta para:</p>
+        
+        <ul>
+                🧠 Organizar informações complexas de maneira acessível</li>
+                ⚡ Oferecer ferramentas de busca e análise inteligente</li>
+                📊 Visualizar dados acadêmicos de forma intuitiva</li>
+        </ul>
+        
+        <p style='font-style: italic;'>"O conhecimento deve ser livre como o ar que respiramos" - Princípio Fundador do LibAccess</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Aplica o CSS
 st.markdown(background_css, unsafe_allow_html=True)
