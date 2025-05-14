@@ -8,6 +8,11 @@ import tempfile
 import cv2
 import numpy as np
 import base64
+from gtts import gTTS 
+from io import BytesIO
+import pyaudio
+
+
 
 st.set_page_config(
     page_title="LibAccess®",
@@ -69,12 +74,12 @@ background_css = f"""
     background-position: center;
     background-attachment: fixed;
     background-blend-mode: overlay;
-    background-color: rgba(255,255,255,0.85);
+    background-color: linear-gradient(135deg, #0890BB 0%, #FC9900 100%);
 }}
 
-/* Melhora a legibilidade do conteúdo */
+
 .main .block-container {{
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: linear-gradient(135deg, #0890BB 0%, #FC9900 100%);
     border-radius: 15px;
     padding: 2rem;
     margin-top: 2rem;
@@ -83,13 +88,11 @@ background_css = f"""
 </style>
 """
 
-import streamlit as st
-
 # Estilo CSS personalizado para o botão e biografia
 st.markdown("""
 <style>
     .biography {
-        background-color: #f0f2f6;
+        background-color: ##308C6A;
         padding: 20px;
         border-radius: 10px;
         margin-top: 10px;
@@ -105,24 +108,22 @@ with st.expander("📖 Sobre o LibAccess - Objetivo do Projeto", expanded=False)
     <div class="biography">
         <h3 style='color:#2c3e50;'>LibAccess - Democratizando o Acesso ao Conhecimento</h3>
         
-        <p> LibAccess é uma plataforma inovadora desenvolvida com o objetivo de: </p>
+         LibAccess é uma plataforma inovadora desenvolvida com o objetivo de: 
         
-        <ul>
-                🔓 Facilitar o acesso aberto a conteúdos acadêmicos e científicos</li>
-                📚 Criar uma biblioteca digital colaborativa de recursos educacionais</li>
-                🌍 Promover a democratização do conhecimento em múltiplos idiomas</li>
-                🤝 Conectar pesquisadores, estudantes e entusiastas do aprendizado</li>
-        </ul>
+                🔓 Facilitar o acesso aberto a conteúdos acadêmicos e científicos 
+                📚 Criar uma biblioteca digital colaborativa de recursos educacionais
+                🌍 Promover a democratização do conhecimento em múltiplos idiomas
+                🤝 Conectar pesquisadores, estudantes e entusiastas do aprendizado
         
-        <p>Nossa missão é remover barreiras ao conhecimento, utilizando tecnologia de ponta para:</p>
         
-        <ul>
-                🧠 Organizar informações complexas de maneira acessível</li>
-                ⚡ Oferecer ferramentas de busca e análise inteligente</li>
-                📊 Visualizar dados acadêmicos de forma intuitiva</li>
-        </ul>
+        Nossa missão é remover barreiras ao conhecimento, utilizando tecnologia de ponta para:
         
-        <p style='font-style: italic;'>"O conhecimento deve ser livre como o ar que respiramos" - Princípio Fundador do LibAccess</p>
+        
+                🧠 Organizar informações complexas de maneira acessível
+                ⚡ Oferecer ferramentas de busca e análise inteligente
+                📊 Visualizar dados acadêmicos de forma intuitiva
+        
+                
     </div>
     """, unsafe_allow_html=True)
 
@@ -205,27 +206,9 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.95);
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
- }
-    </style>
-""", unsafe_allow_html=True)
-
-import streamlit as st
-
-st.markdown("""
-<style>
-    /* Estilo para o item não marcado (Inform desenroluyendo) */
-    .stCheckbox [data-baseweb="checkbox"]:not([aria-checked="true"]) + label {
-        color: #FF5733;  /* Cor laranja/vermelho */
-        font-weight: bold;
     }
-    
-    /* Estilo para o item marcado (Análisis de contacto) */
-    .stCheckbox [data-baseweb="checkbox"][aria-checked="true"] + label {
-        color: #33FF57;  /* Cor verde */
-        font-weight: bold;
-    }
-</style>
             
+    </style>
 """, unsafe_allow_html=True)
 
 # --- FUNÇÕES PRINCIPAIS ---
@@ -238,27 +221,45 @@ def processar_pdf(uploaded_file):
     
     texto = ""
     with open(st.session_state.pdf_path, "rb") as arq:
-        leitor = PdfReader(arq)  # Usando PyPDF2 aqui
+        leitor = PdfReader(arq)
         for pagina in leitor.pages:
             texto += pagina.extract_text() or ""
     
     st.session_state.extracted_text = texto.strip()
     return texto
 
-def texto_para_voz(texto):
-    engine = pyttsx3.init()
-    engine.setProperty('rate', 150)
-    engine.setProperty('volume', 0.9)
-    engine.say(texto)
-    engine.runAndWait()
+def texto_para_voz(texto, lang='pt'):
+    try:
+        tts = gTTS(text=texto, lang=lang, slow=False)
+        
+        # Salva em buffer de memória
+        audio_buffer = BytesIO()
+        tts.write_to_fp(audio_buffer)
+        audio_buffer.seek(0)
+        
+        # Reproduz no navegador
+        st.audio(audio_buffer, format='audio/mp3')
+        
+        # Salva em arquivo temporário (opcional)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_audio:
+            tts.save(tmp_audio.name)
+            return tmp_audio.name
+    
+    except Exception as e:
+        st.error(f"Erro na conversão para voz: {str(e)}")  
+        return None
+
+    if audio_file:
+        with open(audio_file, "rb") as f:
+         st.download_button("Baixar Audio", f, file_name="audio_libaccess.mp3") 
 
 def exibir_libras(texto):
-    LIBRAS_DIR = "C:/Users/thuur/Desktop/Projeto Libaccess/imagens_libras"
+    LIBRAS_DIR = "C:/Users/thuur/Desktop/Projeto Libaccess/images_libras"
     texto = texto.upper()
-    
+
     if not os.path.exists(LIBRAS_DIR):
-        st.error(f"Pasta '{LIBRAS_DIR}' não encontrada!")
-        return
+        st.error(f"Pasta '{LIBRAS_DIR}' não encontrada!")  
+        return 
     
     caracteres_validos = [c for c in texto if c.isalpha()]
     
@@ -284,24 +285,60 @@ def exibir_libras(texto):
                             st.error(f"Erro ao carregar {letra}.png")
                     else:
                         st.error(f"Imagem para '{letra}' não encontrada")
-
+### Audio para libras
 def audio_para_texto():
-    reconhecedor = sr.Recognizer()
-    with st.spinner("Ouvindo... Fale agora (5 segundos)"):
+    #Captura áudio do microfone e converte para texto.
+    r = sr.Recognizer()
+    try:
         with sr.Microphone() as fonte:
+            st.info("Fale agora... (gravando por 5 segundos)")
+            audio = r.listen(fonte, timeout=5, phrase_time_limit=5)
             try:
-                audio = reconhecedor.listen(fonte, timeout=5)
-                texto = reconhecedor.recognize_google(audio, language="pt-BR")
-                return texto.upper()
-            except sr.WaitTimeoutError:
-                st.error("Tempo esgotado. Nenhum áudio detectado.")
-                return ""
+                texto = r.recognize_google(audio, language="pt-BR")
+                return texto.upper()  # Padroniza para maiúsculas
             except sr.UnknownValueError:
-                st.error("Não foi possível reconhecer o áudio")
-                return ""
-            except Exception as e:
-                st.error(f"Erro: {str(e)}")
-                return ""
+                st.error("Não foi possível entender o áudio")
+                return None
+            except sr.RequestError as e:
+                st.error(f"Erro na API: {str(e)}")
+                return None
+    except Exception as e:
+        st.error(f"Erro no microfone: {str(e)}")
+        return None
+
+def exibir_libras(texto):
+    LIBRAS_DIR = "C:/Users/thuur/Desktop/Projeto Libaccess/imagens_libras2"
+    
+    # Verifica se a pasta existe
+    if not os.path.exists(LIBRAS_DIR):
+        st.error(f"Pasta não encontrada: {LIBRAS_DIR}")
+        return
+    
+    # Filtra apenas letras (A-Z)
+    texto = texto.upper()
+    letras = [c for c in texto if c.isalpha()]
+    
+    if not letras:
+        st.warning("Nenhuma letra válida encontrada")
+        return
+    
+    # Exibe as imagens encontradas
+    st.subheader("Sinais em LIBRAS")
+    cols = st.columns(6)  # 6 colunas por linha
+    
+    for i, letra in enumerate(letras):
+        img_path = os.path.join(LIBRAS_DIR, f"{letra}.png")
+        
+        with cols[i % 6]:
+            if os.path.exists(img_path):
+                try:
+                    img = Image.open(img_path)
+                    st.image(img, caption=letra, width=100)
+                except Exception as e:
+                    st.error(f"Erro ao abrir {letra}.png: {str(e)}")
+            else:
+                st.error(f"Arquivo não encontrado: {letra}.png")
+
 
 # --- INTERFACE PRINCIPAL ---
 # Inicialização de estado
@@ -310,11 +347,11 @@ if 'pdf_path' not in st.session_state:
 if 'extracted_text' not in st.session_state:
     st.session_state.extracted_text = ""
 
-# Aas principais
+#Área de tabs
 tab1, tab2, tab3 = st.tabs(["📚 PDF para LIBRAS", "🎤 Áudio para LIBRAS", "📷 Reconhecimento"])
 
 with tab1:
-    st.markdown('<div class="tab-content" style="font-size:70rem;">', unsafe_allow_html=True)
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Carregue um arquivo PDF", type=["pdf"])
         
     if uploaded_file:
@@ -332,18 +369,41 @@ with tab1:
         with col2:
             if st.button("Exibir em LIBRAS 🤟"):
                 exibir_libras(texto)
-    
-    st.markdown('</div></div>', unsafe_allow_html=True)
 
-with tab2:
-    st.markdown('<div class="tab-content" style="font-size:74rem;">', unsafe_allow_html=True)
-    if st.button("Iniciar Gravação 🎤"):
-        texto = audio_para_texto()
-        if texto:
-            st.text_area("Texto Reconhecido", texto)
-            exibir_libras(texto)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+with tab2:    
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     
-    st.markdown('</div></div>', unsafe_allow_html=True)
+    # Botão de gravação
+    if st.button("Iniciar Gravação 🎤", key="btn_gravar"):
+        with st.spinner("Gravando... (5 segundos)"):
+            texto = audio_para_texto()
+            if texto:
+                st.session_state['texto_audio'] = texto
+    
+    # Exibe o texto reconhecido (se existir)
+    if 'texto_audio' in st.session_state:
+        st.text_area("Texto Reconhecido", st.session_state.texto_audio, key="texto_reconhecido")
+        
+        # Botões de ação (só aparecem depois da gravação)
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Exibir em LIBRAS 🤟", key="btn_libras"):
+                st.session_state['mostrar_libras'] = True
+        
+        with col2:
+            if st.button("Ouvir Áudio 🔊", key="btn_voz"):
+                texto_para_voz(st.session_state.texto_audio)
+    
+    # Exibe as LIBRAS (se solicitado)
+    if st.session_state.get('mostrar_libras', False) and 'texto_audio' in st.session_state:
+        exibir_libras(st.session_state.texto_audio)
+        st.session_state['mostrar_libras'] = False  
+
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with tab3:
     st.markdown('<div class="tab-content" style="font-size:74rem;">', unsafe_allow_html=True)
