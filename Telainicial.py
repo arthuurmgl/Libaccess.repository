@@ -1,7 +1,6 @@
 import streamlit as st
 from PIL import Image
 from PyPDF2 import PdfReader
-import pyttsx3
 import speech_recognition as sr
 import os
 import tempfile
@@ -348,7 +347,7 @@ if 'extracted_text' not in st.session_state:
     st.session_state.extracted_text = ""
 
 #Área de tabs
-tab1, tab2, tab3 = st.tabs(["📚 PDF para LIBRAS", "🎤 Áudio para LIBRAS", "📷 Reconhecimento"])
+tab1, tab2, tab3 = st.tabs([" PDF para LIBRAS", " Áudio para LIBRAS", " Reconhecimento"])
 
 with tab1:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
