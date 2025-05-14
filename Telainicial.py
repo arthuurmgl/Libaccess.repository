@@ -9,7 +9,6 @@ import numpy as np
 import base64
 from gtts import gTTS 
 from io import BytesIO
-import pyaudio
 
 
 
