@@ -9,6 +9,7 @@ import numpy as np
 import base64
 from gtts import gTTS 
 from io import BytesIO
+from pathlib import Path
 
 
 
@@ -20,28 +21,20 @@ st.set_page_config(
 
 # --- ESTILOS E CABEÇALHO
 
-def local_css(file_name):
-    with open(file_name) as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+def img_to_base64(img_name):
+    # Caminho relativo seguro
+    img_path = Path(__file__).parent / "assets" / img_name
+    with open(img_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
 
-def add_bg_from_local(image_file):
-    with open(image_file, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: url(data:image/png;base64,{encoded_string.decode()});
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-color: rgba(255, 255, 255, 0.9);
-            background-blend-mode: lighten;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+background_css = f"""
+<style>
+.stApp {{
+    background-image: url(data:image/jpg;base64,{img_to_base64("background.jpg")});
+    background-size: cover;
+}}
+</style>
+"""
 
 # Cabeçalho personalizado
 st.markdown("""
